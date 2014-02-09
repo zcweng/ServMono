@@ -1,0 +1,102 @@
+package resteasy.plugins.server.sun.http;
+
+import com.sun.net.httpserver.HttpContext;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+
+
+import java.io.IOException;
+
+import resteasy.core.Dispatcher;
+import resteasy.core.SynchronousDispatcher;
+import resteasy.core.ThreadLocalResteasyProviderFactory;
+import resteasy.logging.Logger;
+import resteasy.spi.HttpRequest;
+import resteasy.spi.ResteasyProviderFactory;
+
+
+/**
+ * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
+ * @version $Revision: 1 $
+ */
+public class ResteasyHttpHandler implements HttpHandler
+{
+   protected Dispatcher dispatcher;
+   protected ResteasyProviderFactory providerFactory;
+   private final static Logger logger = Logger.getLogger(ResteasyHttpHandler.class);
+
+   public void setDispatcher(Dispatcher dispatcher)
+   {
+      this.dispatcher = dispatcher;
+   }
+
+   public void setProviderFactory(ResteasyProviderFactory providerFactory)
+   {
+      this.providerFactory = providerFactory;
+   }
+
+   @Override
+   public void handle(final HttpExchange httpExchange) throws IOException
+   {
+      HttpServerResponse response = new HttpServerResponse(providerFactory, httpExchange);
+      HttpRequest request = null;
+      try
+      {
+         request = new HttpServerRequest((SynchronousDispatcher)dispatcher, response, httpExchange);
+      }
+      catch (Exception e)
+      {
+         logger.trace("Error parsing request", e);
+         httpExchange.sendResponseHeaders(400, -1);
+         return;
+      }
+
+      try
+      {
+         //logger.info("***PATH: " + request.getRequestURL());
+         // classloader/deployment aware RestasyProviderFactory.  Used to have request specific
+         // ResteasyProviderFactory.getInstance()
+         ResteasyProviderFactory defaultInstance = ResteasyProviderFactory.getInstance();
+         if (defaultInstance instanceof ThreadLocalResteasyProviderFactory)
+         {
+            ThreadLocalResteasyProviderFactory.push(providerFactory);
+         }
+
+
+         try
+         {
+            ResteasyProviderFactory.pushContext(HttpExchange.class, httpExchange);
+            ResteasyProviderFactory.pushContext(HttpContext.class, httpExchange.getHttpContext());
+            dispatcher.invoke(request, response);
+            if (!response.isCommitted())
+            {
+               response.commitHeaders();
+            }
+         }
+         catch (Exception ex)
+         {
+            logger.error("WTF!", ex);
+            if (!response.isCommitted())
+            {
+               httpExchange.sendResponseHeaders(500, -1);
+            }
+         }
+         finally
+         {
+            ResteasyProviderFactory.clearContextData();
+            httpExchange.getResponseBody().close();
+         }
+      }
+      finally
+      {
+         ResteasyProviderFactory defaultInstance = ResteasyProviderFactory.getInstance();
+         if (defaultInstance instanceof ThreadLocalResteasyProviderFactory)
+         {
+            ThreadLocalResteasyProviderFactory.pop();
+         }
+
+      }
+
+
+   }
+}
