@@ -8,6 +8,12 @@ ServMono is a based on HttpServer (sun), HTTP WEB runs on the Android platform, 
 
 ServMono 是一个Android Lib Project
 
+SUN HttpServer : http://docs.oracle.com/javase/7/docs/jre/api/net/httpserver/spec/com/sun/net/httpserver/package-summary.html
+
+RestEasy : http://www.jboss.org/resteasy
+
+========
+
 启动服务：
 
 		try {
@@ -49,6 +55,7 @@ ServMono 是一个Android Lib Project
 		}
 	
 访问服务：
+
 	路径：GET /test/basic
 	
 	回应：“basic”
