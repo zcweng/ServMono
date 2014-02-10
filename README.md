@@ -9,44 +9,47 @@ ServMono is a based on HttpServer (sun), HTTP WEB runs on the Android platform, 
 ServMono 是一个Android Lib Project
 
 启动服务：
-	try {
-		ResteasyDeployment deployment = new ResteasyDeployment();
-		deployment.getActualResourceClasses().add(SimpleResource.class);
-		
-		deployment.getActualProviderClasses().add(StringTextStar.class);
-		deployment.getActualProviderClasses().add(DefaultTextPlain.class);
-		deployment.getActualProviderClasses().add(FileProvider.class);
-		deployment.getActualProviderClasses().add(ByteArrayProvider.class);
-		deployment.getActualProviderClasses().add(InputStreamProvider.class);
-		
-		HttpServerContainer.start(deployment);
-		
-	} catch (Exception e1) {
-		e1.printStackTrace();
-	}
+
+		try {
+			ResteasyDeployment deployment = new ResteasyDeployment();
+			deployment.getActualResourceClasses().add(SimpleResource.class);
+			
+			deployment.getActualProviderClasses().add(StringTextStar.class);
+			deployment.getActualProviderClasses().add(DefaultTextPlain.class);
+			deployment.getActualProviderClasses().add(FileProvider.class);
+			deployment.getActualProviderClasses().add(ByteArrayProvider.class);
+			deployment.getActualProviderClasses().add(InputStreamProvider.class);
+			
+			HttpServerContainer.start(deployment);
+			
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
 
 使用：
-	@Path("/test")
-	@Produces(MediaType.WILDCARD) 
-	public interface SimpleInterface {
 
-		@GET
-		@Path("basic") 
-		@Produces(MediaType.TEXT_PLAIN) 
-		public String getBasic(); 
-	}
-	
-	public class SimpleResource implements SimpleInterface{
+		@Path("/test")
+		@Produces(MediaType.WILDCARD) 
+		public interface SimpleInterface {
+
+			@GET
+			@Path("basic") 
+			@Produces(MediaType.TEXT_PLAIN) 
+			public String getBasic(); 
+		}
 		
-		@Override
-		public String getBasic() 
-		{ 
-			System.out.println("getBasic()"); 
-			return "basic"; 
-		} 
-	}
+		public class SimpleResource implements SimpleInterface{
+			
+			@Override
+			public String getBasic() 
+			{ 
+				System.out.println("getBasic()"); 
+				return "basic"; 
+			} 
+		}
 	
 访问服务：
 	路径：GET /test/basic
+	
 	回应：“basic”
 	
